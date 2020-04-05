@@ -1,21 +1,13 @@
 # Импорт бибилиотек
 
 import pandas as pd
-import numpy as np
-import xgboost as xgb
-from matplotlib import pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
-from scipy import interp
-from imblearn.over_sampling import SMOTE
+
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.linear_model import LogisticRegression
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 from sklearn.model_selection import StratifiedKFold, train_test_split
-from sklearn.feature_selection import chi2, mutual_info_classif, RFECV
-from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_curve, roc_curve, auc, \
-                            log_loss, roc_auc_score, average_precision_score, confusion_matrix
+
 
 #----------------------запуск модели ---------------------------------#
 
@@ -48,14 +40,24 @@ test = pd.read_csv('dataset/dataset_raw_test.csv', sep=';')
 print(train.shape, test.shape)
 
 ### обработка датасета ###
-prepare_dataset.prepare_dataset(dataset=train, dataset_type='train')
-prepare_dataset.prepare_dataset(dataset=test, dataset_type='test')
+prepare_dataset.prepare_dataset(INTER_LIST=INTER_LIST, dataset=train, dataset_type='train')
+prepare_dataset.prepare_dataset(INTER_LIST=INTER_LIST, dataset=test, dataset_type='test')
 
+# обучающий датасет #
 dataset = pd.read_csv('dataset/dataset_train.csv', sep=';')
 X = dataset.drop(['user_id', 'is_churned'], axis=1)
 y = dataset['is_churned']
 
+# датасет для финального предсказания #
+dataset_predict=pd.read_csv('dataset/dataset_test.csv', sep=';')
+X_predict=dataset_predict.drop(['user_id'], axis=1)
+
+print('X', X.shape)
+print('X_predict', X_predict.shape)
+
+# масштабирование признаков #
 X_mm = MinMaxScaler().fit_transform(X)
+X_mm_predict = MinMaxScaler().fit_transform(X_predict)
 
 X_train, X_test, y_train, y_test = train_test_split(X_mm,
                                                     y,
@@ -68,5 +70,12 @@ X_train, X_test, y_train, y_test = train_test_split(X_mm,
 ### балансировка классов ###
 X_train_balanced, y_train_balanced = class_balance.class_balance(X_train, y_train)
 
-### обучение модели ###
-fitted_clf_basic = fit_predict.xgb_fit_predict(X_train_balanced, y_train_balanced, X_test, y_test)
+### обучение модели и предсказания ###
+y_predict = fit_predict.xgb_fit_predict(X_train_balanced, y_train_balanced, X_test, y_test, X_mm_predict)
+
+#предсказания в csv-файл#
+
+final_prediction=pd.DataFrame(columns=['user_id','is_churned'])
+final_prediction['user_id']=dataset_predict['user_id']
+final_prediction['is_churned']=y_predict
+final_prediction.to_csv('dataset/final_prediction.csv', sep=';', index=False)

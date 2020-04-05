@@ -1,5 +1,12 @@
+import time
+
+from datetime import datetime, timedelta
+def time_format(sec):
+    return str(timedelta(seconds=sec))
+
+
 ### обработка датасета ###
-def prepare_dataset(dataset,
+def prepare_dataset(INTER_LIST, dataset,
                     dataset_type='train',
                     dataset_path='dataset/'):
     print(dataset_type)

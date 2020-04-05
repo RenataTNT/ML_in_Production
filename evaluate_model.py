@@ -1,5 +1,9 @@
 ## оценка качества модели #
 
+from sklearn.metrics import precision_score, recall_score, f1_score, precision_recall_curve, roc_curve, auc, \
+                            log_loss, roc_auc_score, average_precision_score, confusion_matrix
+
+
 def evaluation(y_true, y_pred, y_prob):
     precision = precision_score(y_true=y_true, y_pred=y_pred)
     recall = recall_score(y_true=y_true, y_pred=y_pred)

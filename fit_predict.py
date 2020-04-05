@@ -1,7 +1,11 @@
 ### обучение модели ###
+
+import xgboost as xgb
+
 import evaluate_model
 
-def xgb_fit_predict(X_train, y_train, X_test, y_test):
+def xgb_fit_predict(X_train, y_train, X_test, y_test, X_predict):
+
     clf = xgb.XGBClassifier(max_depth=3,
                             n_estimators=100,
                             learning_rate=0.1,
@@ -19,4 +23,5 @@ def xgb_fit_predict(X_train, y_train, X_test, y_test):
     predict_test = clf.predict(X_test)
     precision_test, recall_test, f1_test, log_loss_test, roc_auc_test = \
         evaluate_model.evaluation(y_test, predict_test, predict_proba_test[:, 1])
-    return clf
+    predict_final = clf.predict(X_predict)
+    return predict_final
